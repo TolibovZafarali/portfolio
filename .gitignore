@@ -1,0 +1,25 @@
+# Dependencies
+/node_modules/
+
+# Build and runtime output
+/dist/
+/.next/
+/.vinext/
+/.wrangler/
+/out/
+
+# Test output
+/coverage/
+/playwright-report/
+/test-results/
+
+# Local environment
+.env*
+!.env.example
+.DS_Store
+*.pem
+
+# Logs and temporary work
+*.log
+/outputs/
+/work/

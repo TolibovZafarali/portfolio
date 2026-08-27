@@ -1,0 +1,41 @@
+export const MOTION = {
+  desktopQuery: "(min-width: 769px) and (prefers-reduced-motion: no-preference)",
+  mobileQuery: "(max-width: 768px) and (prefers-reduced-motion: no-preference)",
+  reducedQuery: "(prefers-reduced-motion: reduce)",
+  scrub: 0.65,
+  hero: {
+    dwell: 0.12,
+    travel: 0.68,
+    settle: 0.2,
+  },
+  project: {
+    dwell: 0.16,
+    travel: 0.62,
+    settle: 0.22,
+  },
+  system: {
+    carrierStart: 14,
+    carrierEnd: 84,
+    rowStep: 0.135,
+    rowStart: 0.08,
+    rowPeak: 0.085,
+  },
+  desktop: {
+    heroPanelTravel: 102,
+    planeStart: 15,
+    planeEnd: -16,
+    bandStart: -18,
+    bandEnd: 22,
+    routeInset: 31,
+    routeNodeTravel: 8,
+  },
+  mobile: {
+    heroPanelTravel: 102,
+    planeStart: 12,
+    planeEnd: -14,
+    bandStart: -16,
+    bandEnd: 18,
+    routeInset: 23,
+    routeNodeTravel: 12,
+  },
+} as const;
