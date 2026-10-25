@@ -9,7 +9,8 @@
 }
 
 .monogram__pointer,
-.monogram__float {
+.monogram__float,
+.monogram__entrance {
   position: absolute;
   inset: 0;
   transform-style: preserve-3d;
@@ -22,6 +23,8 @@
 .monogram__float {
   animation: monogram-float 6s ease-in-out infinite;
 }
+
+.monogram__entrance { transform-origin: 50% 44%; }
 
 .monogram__solid {
   --solid-width: 61cqw;

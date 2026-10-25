@@ -160,6 +160,37 @@ test("restores split lettering and unclipped projects when motion is paused", as
 test("runs ribbon and pointer effects only while motion is enabled", async ({ page }) => {
   const ribbon = page.locator(".motion-ribbon");
   const track = page.locator(".motion-ribbon__track");
+  await expect(page.locator(".site")).toHaveAttribute("data-motion", "ready");
+  await page.evaluate(() => document.fonts.ready);
+  const ribbonPositions = await page.evaluate(() => {
+    const journey = document.querySelector<HTMLElement>(".hero-journey")!;
+    const heroHeight = document.querySelector<HTMLElement>(".hero")!.offsetHeight;
+    const heroEnd = journey.getBoundingClientRect().top + window.scrollY + journey.offsetHeight - heroHeight;
+    const ribbonTop = document.querySelector(".motion-ribbon")!.getBoundingClientRect().top + window.scrollY;
+    return { dark: heroEnd + heroHeight * .075, paper: ribbonTop - window.innerHeight * .25 };
+  });
+  for (const phase of ["dark", "paper", "dark", "paper"] as const) {
+    await page.evaluate((top) => window.scrollTo({ top, behavior: "instant" }), ribbonPositions[phase]);
+    await expect.poll(() => page.locator(".site").evaluate((element) =>
+      (element as HTMLElement).style.getPropertyValue("--journey-bg"),
+    )).toBe(phase === "dark" ? "#151613" : "#f7f7f2");
+    const contrasts = await ribbon.evaluate((element) => {
+      const luminance = (color: string) => {
+        const channels = color.match(/[\d.]+/g)!.slice(0, 3).map((value) => {
+          const channel = Number(value) / 255;
+          return channel <= .04045 ? channel / 12.92 : ((channel + .055) / 1.055) ** 2.4;
+        });
+        return channels[0]! * .2126 + channels[1]! * .7152 + channels[2]! * .0722;
+      };
+      const background = luminance(getComputedStyle(document.querySelector(".continuous-backdrop")!).backgroundColor);
+      return [...element.querySelectorAll(".motion-ribbon__phrase > span")].map((word) => {
+        const style = getComputedStyle(word);
+        const foreground = luminance(word.classList.contains("motion-ribbon__outline") ? style.webkitTextStrokeColor : style.color);
+        return (Math.max(foreground, background) + .05) / (Math.min(foreground, background) + .05);
+      });
+    });
+    expect(Math.min(...contrasts), `Ribbon fill and outline must contrast with the settled ${phase} background`).toBeGreaterThanOrEqual(4.5);
+  }
   await ribbon.scrollIntoViewIfNeeded();
   await expect(ribbon).toHaveAttribute("data-running", "true");
   const movingStart = await track.evaluate((element) => getComputedStyle(element).transform);

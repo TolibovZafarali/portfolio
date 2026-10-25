@@ -48,8 +48,8 @@ export function createContinuity(root: HTMLElement) {
     const lighten = smooth(clamp((scroll - (heroEnd + height * .1)) / Math.max(1, paperAt - heroEnd - height * .1)));
     const darkness = darken * (1 - lighten);
     const background = gsap.utils.interpolate("#f7f7f2", "#151613", darkness);
-    const channels = (background.match(/[\d.]+/g) ?? []).slice(0, 3).map((value) => {
-      const channel = Number(value) / 255;
+    const channels = gsap.utils.splitColor(background).slice(0, 3).map((value) => {
+      const channel = value / 255;
       return channel <= .04045 ? channel / 12.92 : ((channel + .055) / 1.055) ** 2.4;
     });
     const luminance = (channels[0] ?? 1) * .2126 + (channels[1] ?? 1) * .7152 + (channels[2] ?? 1) * .0722;
@@ -65,11 +65,13 @@ export function createContinuity(root: HTMLElement) {
     progress: 1,
     ease: "none",
     onUpdate: render,
-    scrollTrigger: { start: 0, end: () => ScrollTrigger.maxScroll(window), scrub: .8, onRefresh: measure },
+    scrollTrigger: { start: 0, end: () => ScrollTrigger.maxScroll(window), scrub: .8 },
   });
+  ScrollTrigger.addEventListener("refresh", measure);
 
   return () => {
     disposed = true;
+    ScrollTrigger.removeEventListener("refresh", measure);
     animation.scrollTrigger?.kill();
     animation.kill();
     frame.removeAttribute("style");

@@ -23,6 +23,7 @@ export function Monogram({ className = "" }: { readonly className?: string }) {
       <div className="monogram__orbit">
       <div className="monogram__pointer" data-sculpture>
         <div className="monogram__float">
+          <div className="monogram__entrance">
           <div className="monogram__solid">
             <svg className="monogram__face monogram__face--back" viewBox="0 0 260 282">
               <path d={silhouette} />
@@ -46,6 +47,7 @@ export function Monogram({ className = "" }: { readonly className?: string }) {
               <path className="monogram__surface" d={silhouette} />
               <path className="monogram__highlight" d="M1 1H259M1 57H166M1 227L169 57M93 227H259M1 281H259" />
             </svg>
+          </div>
           </div>
         </div>
       </div>

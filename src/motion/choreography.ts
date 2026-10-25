@@ -125,13 +125,15 @@ export function createChoreography(root: HTMLElement) {
           yPercent: 115, rotationX: -65, rotation: 6, opacity: 0,
           duration: 1.05, stagger: .035, clearProps: "transform,opacity",
         }, .05)
-        .from(`${monogram} .monogram__solid`, {
-          rotationY: -115, rotationZ: 20, scale: .55, opacity: 0,
-          duration: 1.5, clearProps: "transform,opacity",
-        }, .18)
         .from("[data-hero-intro] > *, .hero__eyebrow > span", {
           opacity: 0, y: 24, duration: .9, stagger: .12, clearProps: "opacity,transform",
         }, .55);
+        gsap.timeline({ defaults: { ease: "power3.out" } })
+          .from(monogram, { opacity: 0, duration: 1.5, clearProps: "opacity" }, .18)
+          .from(`${monogram} .monogram__entrance`, {
+            rotationY: -88, rotationZ: 31, scale: .55,
+            duration: 1.5, clearProps: "transform",
+          }, .18);
         const finishEntrance = () => {
           if (window.scrollY <= 24) return;
           entrance.progress(1).kill();
