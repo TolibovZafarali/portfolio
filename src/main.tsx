@@ -8,7 +8,7 @@ import "./styles/motion.css";
 import "./styles/interactions.css";
 import "./styles/cinematic.css";
 import "./styles/continuity.css";
-import "./styles/handoff.css";
+import "./styles/showcase.css";
 
 const root = document.getElementById("root");
 

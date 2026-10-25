@@ -30,28 +30,26 @@ in `src/content/portfolio.ts`. Both project repositories are public. The Venfour
 showcase uses a capture of its public homepage; Imposter uses the project's App
 Store artwork. Public links and source material were checked on October 24, 2026.
 
-Scroll motion uses GSAP ScrollTrigger. A sticky opening carries the 3D monogram
-through an orbital particle field into a second, dark composition. Venfour and
-Imposter share a persistent visual surface: the monogram becomes a browser frame,
-the browser narrows into a card, and the card fans into the game artwork. The shape
-travels beside project details, becomes overlapping rings, and resolves into the
-contact arrow. One background palette flows beneath the complete sequence.
-Geometry is recalculated on resize and when project details expand; reversing the
-scroll retraces the same path. The browser-to-card transformation has a dedicated
-350svh sequence (300svh on phones and tablets): perspective turn, narrowing frame,
-opaque mask reveal, and staggered card unfolding. Longer hero and project holds
-slow the animation's pacing without intercepting wheel or touch scrolling.
-Short landscape screens use a compact, unpinned presentation.
+The opening uses GSAP ScrollTrigger: a sticky hero carries the 3D monogram
+through an orbital particle field into a second, dark composition. The monogram
+then fades out as the page returns to the project showcases. The hero sequence
+uses 270svh on desktop and 240svh on smaller screens.
 
-The monogram uses CSS 3D geometry; the orbital field uses a lightweight, resolution-
-capped canvas. Decorative motion pauses outside the viewport and while the page is
-hidden. Scrolling remains native, and navigation links can skip directly to the work.
+The rest of the portfolio scrolls naturally. Each project pairs its artwork and
+explanation on desktop and stacks them on phones, with a brief entrance and a
+subtle pointer tilt. About presents the introduction and all three principles
+together, followed directly by the contact section. There are no pinned project
+stages or additional transformation interludes.
 
-The fixed motion control disables animation and sticky scroll distance while
-preserving the section being viewed. All project links and details remain available,
-and the initial presentation respects the system's reduced-motion preference.
-Pausing inside the decorative transformation lands on the usable Imposter showcase.
-Browser tests exercise rapid reversals, mid-sequence resizing, the opening seam,
-direct anchors, and repeated motion toggles as well as the static presentation.
+The monogram uses CSS 3D geometry; the orbital field uses a lightweight,
+resolution-capped canvas. Decorative motion pauses outside the viewport and while
+the page is hidden. The fixed motion control preserves the current reading
+position when animation is disabled, and the initial presentation respects the
+system's reduced-motion preference. Geometry refreshes on resize and when project
+details expand.
+
+Browser tests cover opening continuity, native scrolling, compact project flow,
+local artwork, readable About and contact content, keyboard navigation, project
+details, and motion controls across phone, tablet, and desktop layouts.
 
 `npm run build` generates the static site in `dist/` for hosting.

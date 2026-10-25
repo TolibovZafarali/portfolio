@@ -36,9 +36,6 @@
 .browser-frame__bar > div { display: flex; gap: 4px; }
 .browser-frame__bar i { width: 5px; height: 5px; border-radius: 50%; border: 1px solid #bbb; }
 .browser-frame__screen { width: 100%; height: auto; border-radius: 0 0 8px 8px; }
-.venfour-stage__badge { position: absolute; z-index: 3; bottom: 17%; right: 5%; display: flex; gap: 14px; align-items: center; padding: 20px 26px; background: #f7f7f2; box-shadow: 0 15px 40px #26382420; transform: rotate(5deg); font-size: 9px; line-height: 1.6; letter-spacing: .055em; }
-.venfour-stage__badge strong { font-weight: 600; }
-.badge-check { width: 30px; height: 30px; display: grid; place-items: center; background: #e7eee3; border: 1px solid #cdd8c7; border-radius: 50%; font-size: 15px; }
 .stage-caption { position: absolute; bottom: 28px; left: 36px; font-size: 9px; letter-spacing: .08em; }
 .stage-visit { position: absolute; bottom: 23px; right: 28px; display: flex; align-items: center; gap: 17px; font-size: 9px; }
 .stage-visit > span { display: grid; place-items: center; border: 1px solid #0003; width: 35px; height: 35px; border-radius: 50%; font-size: 17px; transition: background .3s, color .3s, transform .4s; }
@@ -63,14 +60,12 @@
 .imposter-stage { background: #232322; color: #f7f7f2; }
 .imposter-stage__top { position: absolute; z-index: 4; top: 32px; left: 36px; right: 36px; display: flex; justify-content: space-between; font-size: 8px; letter-spacing: .06em; color: #e1e1dc; }
 .imposter-stage__top .status-dot { color: #e5514e; }
-.imposter-stage__ghost { position: absolute; font-size: 15vw; line-height: .78; font-variation-settings: "wdth" 78,"wght" 800; font-weight: 800; color: #30302e; left: -1%; top: 20%; letter-spacing: -.075em; }
 .imposter-posters { position: absolute; width: 63%; height: 82%; left: 18.5%; top: 12%; }
 .imposter-poster { position: absolute; width: 33%; border: 1px solid #55554f; border-radius: 15px; box-shadow: 0 30px 45px #0006; overflow: hidden; }
 .imposter-poster img { width: 100%; height: auto; }
 .imposter-poster--left { left: 2%; top: 8%; transform: rotate(-12deg); }
 .imposter-poster--center { left: 33.5%; top: -2%; z-index: 2; transform: rotate(0deg); }
 .imposter-poster--right { right: 0%; top: 10%; transform: rotate(12deg); }
-.imposter-stage__cat { position: absolute; bottom: 14%; left: 5.5%; width: 14%; height: auto; transform: rotate(-15deg); }
 .imposter-stage .stage-caption { color: #d0d0c8; }
 .imposter-stage .stage-visit > span { border-color: #fff5; }
 .imposter-stage:hover .stage-visit > span { background: #f7f7f2; color: #1c1c1a; }
@@ -129,9 +124,7 @@
   .project__subtitle { font-size: 13px; }
   .project-stage { height: 470px; }
   .browser-frame { top: 25%; width: 82%; left: 9%; }
-  .venfour-stage__badge { bottom: 15%; right: 4%; }
   .imposter-posters { width: 80%; left: 10%; top: 17%; }
-  .imposter-stage__cat { left: 1.5%; width: 15%; bottom: 15%; }
   .about__intro { gap: 7%; }
   .principle { padding-left: 22px; padding-right: 22px; }
 }
@@ -161,8 +154,6 @@
   .venfour-stage__top > span { display: none; }
   .browser-frame { width: 94%; left: 3%; top: 27%; transform: perspective(1000px) rotateY(-7deg) rotateZ(-5deg); }
   .browser-frame__bar { height: 24px; padding: 5px 10px; font-size: 6px; }
-  .venfour-stage__badge { right: 6%; bottom: 17%; padding: 12px 15px; font-size: 7px; gap: 10px; }
-  .badge-check { width: 24px; height: 24px; font-size: 13px; }
   .stage-caption { left: 20px; bottom: 22px; font-size: 7px; max-width: 150px; }
   .stage-visit { right: 18px; bottom: 17px; font-size: 0; gap: 0; }
   .stage-visit > span { width: 32px; height: 32px; font-size: 16px; }
@@ -176,13 +167,11 @@
   .text-link { font-size: 12px; }
   .imposter-stage__top { top: 24px; left: 20px; right: 20px; font-size: 7px; }
   .imposter-stage__top > span:last-child { display: none; }
-  .imposter-stage__ghost { font-size: 26vw; top: 22%; }
   .imposter-posters { width: 92%; left: 4%; top: 22%; height: 65%; }
   .imposter-poster { width: 36%; border-radius: 9px; }
   .imposter-poster--left { left: -1%; }
   .imposter-poster--center { left: 32%; top: -6%; }
   .imposter-poster--right { right: -3%; }
-  .imposter-stage__cat { width: 19%; bottom: 13%; left: 2%; }
   .about { padding-top: 50px; padding-bottom: 30px; }
   .about__intro { display: block; padding: 44px 0; }
   .about__intro h2 { font-size: 37px; }

@@ -1,0 +1,81 @@
+.selected-work { position: relative; background: var(--paper); color: var(--ink); padding-bottom: 20px; }
+.work-intro { padding: 62px 0 72px; }
+.work-intro__count { margin-right: 64px; }
+.project { padding-bottom: 70px; }
+.project + .project { padding-top: 48px; border-top: 1px solid var(--line); }
+.project__heading { margin-bottom: 28px; }
+.project__number { font-size: 11px; margin-right: 0; }
+.project__type { font-size: 8px; letter-spacing: .08em; color: var(--quiet); }
+.project__body { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: clamp(32px, 5vw, 90px); align-items: center; }
+.project-screen { min-width: 0; }
+.project-stage { height: clamp(380px, 39vw, 560px); border-radius: 4px; }
+.project__copy { display: block; padding: 12px 0; }
+.project__statement h3 { font-size: clamp(28px, 3vw, 48px); margin-top: 14px; }
+.project__description { margin-top: 24px; }
+.project__description > p { font-size: 13px; line-height: 1.8; margin-bottom: 20px; }
+.tech-list { margin-bottom: 23px; }
+.project-details { margin-top: 21px; }
+.project-details summary { padding: 13px 0; }
+.venfour-stage__top { top: 26px; left: 26px; right: 26px; }
+.venfour-stage__top img { width: 108px; }
+.venfour-stage__top > span { display: none; }
+.browser-frame { width: 86%; max-width: 720px; left: 50%; top: 50%; transform: translate(-50%, -50%) rotate(-2deg); }
+.stage-grid { background-size: 54px 54px; opacity: .55; }
+.stage-caption { left: 26px; bottom: 27px; font-size: 7px; }
+.stage-visit { right: 22px; bottom: 20px; font-size: 0; }
+.imposter-stage__top { top: 27px; left: 26px; right: 26px; font-size: 7px; }
+.imposter-stage__top > span:last-child { display: none; }
+.imposter-posters { width: 100%; height: 100%; inset: 0; }
+.imposter-poster { width: min(28%, 190px); top: 50%; }
+.imposter-poster--left { left: 13%; transform: translateY(-47%) rotate(-8deg); }
+.imposter-poster--center { left: 50%; transform: translate(-50%, -50%); }
+.imposter-poster--right { right: 13%; transform: translateY(-47%) rotate(8deg); }
+.about { padding-top: 64px; }
+.about__intro { padding: 45px 0 52px; }
+.about__intro h2 { font-size: clamp(36px, 4.1vw, 66px); }
+.principle { min-height: 0; padding-bottom: 26px; }
+.principle__graphic { margin-top: 22px; }
+.closing { padding-top: 60px; }
+.closing > .section-kicker { padding-right: 60px; }
+.closing__cta { font-size: clamp(64px, 10vw, 160px); padding-top: 36px; }
+.closing__links { padding-bottom: 48px; }
+
+@media (max-width: 1000px) {
+  .project__body { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 28px; }
+  .project-stage { height: 430px; }
+  .project__statement h3 { font-size: 30px; }
+  .project__description > p { font-size: 12px; }
+  .project__links { gap: 18px; }
+  .imposter-poster { width: 29%; }
+}
+
+@media (max-width: 768px) {
+  .work-intro { padding: 40px 0 44px; }
+  .project { padding-bottom: 44px; }
+  .project + .project { padding-top: 34px; }
+  .project__heading { margin-bottom: 20px; }
+  .project__body { display: block; }
+  .project-stage { height: clamp(330px, 58vw, 460px); }
+  .project__copy { padding: 28px 0 0; }
+  .project__statement h3 { font-size: 32px; }
+  .project__description { margin-top: 20px; }
+  .project__description > p { font-size: 13px; }
+  .venfour-stage__top { top: 22px; left: 22px; }
+  .venfour-stage__top img { width: 95px; }
+  .browser-frame { width: 89%; max-width: 540px; }
+  .imposter-stage__top { top: 23px; left: 22px; }
+  .imposter-poster { width: min(29%, 140px); }
+  .imposter-poster--left { left: 13%; }
+  .imposter-poster--right { right: 13%; }
+  .stage-caption { left: 22px; bottom: 25px; }
+  .stage-visit { right: 18px; bottom: 18px; }
+  .about { padding-top: 44px; }
+  .about__intro { padding: 32px 0 38px; }
+  .about__intro h2 { font-size: clamp(31px, 8vw, 43px); }
+  .about__intro p { margin-top: 22px; }
+  .principle, .principle:first-child { padding-top: 22px; padding-bottom: 22px; }
+  .principle__graphic { margin-top: 0; }
+  .closing { padding-top: 40px; }
+  .closing__cta { font-size: 15vw; padding-top: 32px; }
+  .closing__links { padding-bottom: 36px; }
+}

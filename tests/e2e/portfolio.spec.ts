@@ -179,10 +179,8 @@ test("runs ribbon and pointer effects only while motion is enabled", async ({ pa
     const bounds = await stage.boundingBox();
     expect(bounds).not.toBeNull();
     await page.mouse.move(bounds!.x + bounds!.width * .75, bounds!.y + bounds!.height * .35);
-    await expect(stage.locator(".project-cursor")).toHaveCSS("opacity", "1");
-    const cinematic = await page.evaluate(() => matchMedia("(min-height: 601px)").matches);
-    const visibleArtwork = cinematic ? page.locator(".continuity-frame") : stage.locator(".project-depth");
-    if (cinematic) await expect(visibleArtwork).toBeVisible();
+    const visibleArtwork = stage.locator(".project-depth");
+    await expect(visibleArtwork).toBeVisible();
     await expect.poll(() => visibleArtwork.evaluate((element) => {
       const matrix = new DOMMatrixReadOnly(getComputedStyle(element).transform);
       return Math.abs(matrix.m13) + Math.abs(matrix.m23);
@@ -195,7 +193,6 @@ test("runs ribbon and pointer effects only while motion is enabled", async ({ pa
     const bounds = await stage.boundingBox();
     await page.mouse.move(bounds!.x + bounds!.width * .25, bounds!.y + bounds!.height * .65);
     await expect(stage.locator(".project-depth")).toHaveCSS("transform", "none");
-    await expect(stage.locator(".project-cursor")).toHaveCSS("opacity", "0");
   }
   await ribbon.scrollIntoViewIfNeeded();
   await expect(page.locator(".site")).toHaveAttribute("data-motion", "reduced");
@@ -256,9 +253,12 @@ test("plays and rewinds the cinematic opening and preserves context when paused"
     window.scrollTo({ top: screen.getBoundingClientRect().top + window.scrollY + (screen.offsetHeight - stage.offsetHeight) * .5, behavior: "instant" });
   });
   await expect(page.locator(".venfour-stage")).toBeInViewport();
+  await expect(page.locator(".venfour-stage")).toHaveCSS("opacity", "1");
+  await expect(page.locator(".venfour-stage")).toHaveCSS("transform", "none");
+  const projectTop = await page.locator(".venfour-stage").evaluate((element) => element.getBoundingClientRect().top);
   await page.getByRole("button", { name: "Pause animations" }).click();
   await expect(page.locator(".venfour-stage")).toBeInViewport();
-  expect(await page.locator(".venfour-stage").evaluate((element) => Math.abs(element.getBoundingClientRect().top))).toBeLessThan(3);
+  expect(Math.abs(await page.locator(".venfour-stage").evaluate((element) => element.getBoundingClientRect().top) - projectTop)).toBeLessThan(3);
 });
 
 test("keeps narrow headers and short landscape screens navigable", async ({ page }) => {

@@ -10,9 +10,12 @@ export function createChoreography(root: HTMLElement) {
   let context: gsap.Context | undefined;
   let cleanups: (() => void)[] = [];
   let frame = 0;
+  let layoutFrame = 0;
   let initialAnchorFrame = 0;
   let disposed = false;
   let initialized = false;
+  let cachedReadingAnchor: HTMLElement | null = null;
+  let cachedReadingTop = 24;
   const revealedElements = new WeakSet<HTMLElement>();
   let closingRevealed = false;
   const initialHash = window.location.hash;
@@ -22,12 +25,17 @@ export function createChoreography(root: HTMLElement) {
   const releaseInitialAnchor = () => initialInteractions.forEach((event) => window.removeEventListener(event, cancelInitialAnchor));
   const media = window.matchMedia("(prefers-reduced-motion: reduce)");
   const cinematicMedia = window.matchMedia("(min-height: 601px)");
+  let previousCinematicMedia = cinematicMedia.matches;
   const progress = root.querySelector<HTMLElement>("[data-page-progress]");
 
   function updateProgress() {
     frame = 0;
     const maximum = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
     if (progress) progress.style.transform = `scaleX(${Math.min(window.scrollY / maximum, 1)})`;
+    if (initialized && previousCinematicMedia === cinematicMedia.matches) {
+      cachedReadingAnchor = readingAnchor() ?? null;
+      cachedReadingTop = cachedReadingAnchor?.getBoundingClientRect().top ?? 24;
+    }
   }
 
   function requestProgress() {
@@ -35,10 +43,10 @@ export function createChoreography(root: HTMLElement) {
   }
 
   function clearEffects() {
+    context?.revert({ suppressEvents: true });
+    context = undefined;
     cleanups.forEach((cleanup) => cleanup());
     cleanups = [];
-    context?.revert();
-    context = undefined;
     delete root.dataset.heroVisible;
     delete root.dataset.pageHidden;
     delete root.dataset.journeyActive;
@@ -52,6 +60,9 @@ export function createChoreography(root: HTMLElement) {
   function readingAnchor() {
     const selector = ".hero, .motion-ribbon, .work-intro, .project__heading, .project-stage, .project__copy, .about .section-kicker, .about__intro, .principle, .about__footnote, .closing";
     const center = window.innerHeight * .5;
+    const pointedProcess = document.elementFromPoint(window.innerWidth * .35, center)
+      ?.closest<HTMLElement>(".about__intro, .principle");
+    if (pointedProcess && root.contains(pointedProcess)) return pointedProcess;
     const readingStart = [...root.querySelectorAll<HTMLElement>(".work-intro, .project__heading")]
       .map((element) => ({ element, bounds: element.getBoundingClientRect() }))
       .filter(({ bounds }) => bounds.height > 0 && bounds.top >= -24 && bounds.top < Math.min(140, window.innerHeight * .2))
@@ -71,24 +82,30 @@ export function createChoreography(root: HTMLElement) {
   }
 
   function setup() {
-    const handoff = initialized ? root.querySelector<HTMLElement>(".project-handoff")?.getBoundingClientRect() : undefined;
-    const insideHandoff = handoff && handoff.height > 0 && handoff.top <= window.innerHeight * .5 && handoff.bottom > window.innerHeight * .5;
-    const visibleAnchor = insideHandoff
-      ? root.querySelector<HTMLElement>("#imposter .project-stage")
-      : initialized ? readingAnchor() : null;
-    const previousTop = insideHandoff ? 24 : visibleAnchor?.getBoundingClientRect().top;
+    const preference = document.documentElement.dataset.motionPreference;
+    const reduced = preference === "reduce" || (media.matches && preference !== "full");
+    const breakpointChanged = previousCinematicMedia !== cinematicMedia.matches;
+    const cachedAnchor = breakpointChanged && cachedReadingAnchor?.isConnected ? cachedReadingAnchor : null;
+    const visibleAnchor = initialized ? cachedAnchor ?? readingAnchor() : null;
+    const previousTop = cachedAnchor ? cachedReadingTop : visibleAnchor?.getBoundingClientRect().top;
+    const settleScroll = () => {
+      ScrollTrigger.update();
+      ScrollTrigger.getAll().forEach((trigger) => {
+        const tween = trigger.getTween();
+        if (tween && typeof tween.progress === "function") tween.progress(1);
+      });
+    };
     const restorePosition = () => {
       if (visibleAnchor?.isConnected && previousTop !== undefined) {
         const adjustment = visibleAnchor.getBoundingClientRect().top - previousTop;
         if (Math.abs(adjustment) > 1) window.scrollBy({ top: adjustment, behavior: "instant" });
-        ScrollTrigger.update();
+        settleScroll();
       }
       initialized = true;
+      previousCinematicMedia = cinematicMedia.matches;
       requestProgress();
     };
     clearEffects();
-    const preference = document.documentElement.dataset.motionPreference;
-    const reduced = preference === "reduce" || (media.matches && preference !== "full");
     root.dataset.motion = reduced ? "reduced" : "ready";
     if (reduced) {
       restorePosition();
@@ -203,7 +220,7 @@ export function createChoreography(root: HTMLElement) {
         scrollTrigger: { trigger: ribbon, start: "top bottom", end: "bottom top", scrub: .8 },
       });
 
-      root.querySelectorAll<HTMLElement>("[data-reveal]").forEach((element) => {
+      root.querySelectorAll<HTMLElement>("[data-reveal], [data-stage]").forEach((element) => {
         if (revealedElements.has(element) || (initialized && element.getBoundingClientRect().top < window.innerHeight * .96)) {
           revealedElements.add(element);
           return;
@@ -211,101 +228,16 @@ export function createChoreography(root: HTMLElement) {
         const siblings = element.parentElement?.classList.contains("principles")
           ? Array.from(element.parentElement.children).indexOf(element) : 0;
         gsap.from(element, {
-          y: 45, opacity: 0, duration: .9, delay: siblings * .12, ease: "power3.out",
+          y: 20, opacity: 0, duration: .55, delay: siblings * .06, ease: "power2.out",
           scrollTrigger: { trigger: element, start: "top 96%", once: true, onEnter: () => { revealedElements.add(element); } },
           clearProps: "transform,opacity",
         });
       });
-
-      root.querySelectorAll<HTMLElement>("[data-stage]").forEach((stage) => {
-        const screen = stage.closest<HTMLElement>(".project-screen")!;
-        const visual = stage.querySelector<HTMLElement>("[data-project-visual]");
-        if (!cinematic) gsap.fromTo(stage, { clipPath: "inset(10% 8% 10% 8% round 46px)" }, {
-          clipPath: "inset(0% 0% 0% 0% round 0px)", ease: "none",
-          scrollTrigger: { trigger: screen, start: "top 95%", end: "top 10%", scrub: .65 },
-        });
-        if (!cinematic) gsap.fromTo(visual, { y: responsive(80, 34), scale: .88 }, {
-          y: responsive(-50, -18), scale: 1.03, ease: "none",
-          scrollTrigger: { trigger: screen, start: "top bottom", end: "bottom top", scrub: .8, invalidateOnRefresh: true },
-        });
-        gsap.to(stage.querySelector(".project-timeline i"), {
-          scaleX: 1, ease: "none",
-          scrollTrigger: { trigger: screen, start: cinematic ? "top top" : "top 85%", end: cinematic ? "bottom bottom" : "bottom 20%", scrub: .3 },
-        });
-      });
-
-      if (!cinematic) gsap.fromTo(".browser-frame", { rotationY: -18, rotationX: 14, rotationZ: -8 }, {
-        rotationY: 0, rotationX: 2, rotationZ: 1, ease: "none",
-        scrollTrigger: { trigger: ".project--venfour .project-screen", start: "top 95%", end: "bottom bottom", scrub: .9 },
-      });
-      if (!cinematic) gsap.fromTo(".venfour-stage__badge", { y: 45, rotation: 14, scale: .85 }, {
-        y: -45, rotation: -5, scale: 1, ease: "none",
-        scrollTrigger: { trigger: ".project--venfour .project-screen", start: "top bottom", end: "bottom top", scrub: 1 },
-      });
-      gsap.fromTo(".stage-grid", { yPercent: 12, scale: 1.3 }, {
-        yPercent: -12, ease: "none",
-        scrollTrigger: { trigger: ".project--venfour .project-screen", start: "top bottom", end: "bottom top", scrub: 1 },
-      });
-
-      if (!cinematic) {
-        const fanTrigger = { trigger: ".project--imposter .project-screen", start: "top 92%", end: "top 18%", scrub: .9 };
-        gsap.fromTo(".imposter-poster--left", { xPercent: 80, rotation: -2, y: 25 }, {
-          xPercent: 0, rotation: -12, y: 0, ease: "none", scrollTrigger: { ...fanTrigger },
-        });
-        gsap.fromTo(".imposter-poster--right", { xPercent: -80, rotation: 2, y: 25 }, {
-          xPercent: 0, rotation: 12, y: 0, ease: "none", scrollTrigger: { ...fanTrigger },
-        });
-        gsap.fromTo(".imposter-poster--center", { y: 65, scale: .93, rotation: -3 }, {
-          y: 0, scale: 1, rotation: 0, ease: "none", scrollTrigger: { ...fanTrigger },
-        });
-        gsap.fromTo(".imposter-stage__cat", { y: 65, rotation: -28, scale: .7 }, {
-          y: -30, rotation: 12, scale: 1, ease: "none",
-          scrollTrigger: { trigger: ".project--imposter .project-screen", start: "top 85%", end: "bottom top", scrub: 1 },
-        });
-      }
-      gsap.fromTo(".imposter-stage__ghost", { xPercent: -10 }, {
-        xPercent: 8, ease: "none",
-        scrollTrigger: { trigger: ".project--imposter .project-screen", start: "top bottom", end: "bottom top", scrub: 1.1 },
-      });
-      gsap.fromTo(".project-cinematic-title", { xPercent: -12 }, {
-        xPercent: 12, ease: "none",
-        scrollTrigger: { trigger: ".project--venfour .project-screen", start: "top bottom", end: "bottom top", scrub: 1 },
-      });
-
-      root.querySelectorAll<HTMLElement>(".ink-reveal").forEach((line) => {
-        gsap.fromTo(line, { backgroundPosition: "100% 0" }, {
-          backgroundPosition: "0% 0", ease: "none",
-          scrollTrigger: { trigger: line, start: "top 88%", end: "top 52%", scrub: .45 },
-        });
-      });
-      root.querySelectorAll<HTMLElement>(".principle").forEach((principle, index) => {
-        const shapes = principle.querySelectorAll(".principle__graphic i");
-        const trigger = { trigger: principle, start: "top 90%", end: "bottom 35%", scrub: .8 };
-        if (index === 0) {
-          gsap.fromTo(shapes, { x: (i) => (i - 1) * 20, scale: .65 }, {
-            x: 0, scale: 1, stagger: .1, ease: "none", scrollTrigger: trigger,
-          });
-        } else if (index === 1) {
-          gsap.fromTo(shapes, { y: (i) => i * 22, rotation: (i) => i * -12 }, {
-            y: 0, rotation: 0, stagger: .1, ease: "none", scrollTrigger: trigger,
-          });
-        } else {
-          gsap.fromTo(shapes, { rotation: (i) => i * 30 }, {
-            rotation: (i) => i * 30 + 180, ease: "none", scrollTrigger: trigger,
-          });
-        }
-      });
       const closing = root.querySelector<HTMLElement>(".closing__cta")!;
       if (!closingRevealed && !(initialized && closing.getBoundingClientRect().top < window.innerHeight * .93)) {
-        gsap.from(".closing .motion-letter, .closing__period", {
-          yPercent: 115, rotationX: -70, rotation: 5, opacity: 0, duration: 1.05,
-          stagger: .035, ease: "power4.out", clearProps: "transform,opacity",
+        gsap.from(closing, {
+          y: 20, opacity: 0, duration: .6, ease: "power2.out", clearProps: "transform,opacity",
           scrollTrigger: { trigger: closing, start: "top 93%", once: true, onEnter: () => { closingRevealed = true; } },
-        });
-        if (!cinematic) gsap.from(".closing__arrow-wrap", {
-          y: 60, rotation: 80, scale: .4, opacity: 0, duration: 1.2, ease: "power3.out",
-          clearProps: "transform,opacity",
-          scrollTrigger: { trigger: ".closing__cta", start: "top 93%", once: true },
         });
       } else {
         closingRevealed = true;
@@ -330,55 +262,28 @@ export function createChoreography(root: HTMLElement) {
         }
 
         root.querySelectorAll<HTMLElement>("[data-stage]").forEach((stage) => {
-          const depth = stage.querySelector<HTMLElement>(".project-depth")!;
-          const cursor = stage.querySelector<HTMLElement>(".project-cursor")!;
-          if (!cinematic) gsap.set(depth, { transformPerspective: 1200 });
-          gsap.set(cursor, { x: 0, y: 0 });
-          const tiltX = cinematic ? undefined : gsap.quickTo(depth, "rotationX", { duration: .8, ease: "power3.out" });
-          const tiltY = cinematic ? undefined : gsap.quickTo(depth, "rotationY", { duration: .8, ease: "power3.out" });
-          const cursorX = gsap.quickTo(cursor, "x", { duration: .35, ease: "power3.out" });
-          const cursorY = gsap.quickTo(cursor, "y", { duration: .35, ease: "power3.out" });
-          const cursorReveal = gsap.fromTo(cursor, { autoAlpha: 0, scale: .5 }, {
-            autoAlpha: 1, scale: 1, duration: .3, ease: "power2.out", paused: true,
-          });
+          const depth = stage.querySelector<HTMLElement>(".project-depth");
+          if (!depth) return;
+          gsap.set(depth, { transformPerspective: 1600 });
+          const tiltX = gsap.quickTo(depth, "rotationX", { duration: .7, ease: "power3.out" });
+          const tiltY = gsap.quickTo(depth, "rotationY", { duration: .7, ease: "power3.out" });
           const move = (event: PointerEvent) => {
             if (event.pointerType === "touch") return;
             const bounds = stage.getBoundingClientRect();
-            const x = event.clientX - bounds.left;
-            const y = event.clientY - bounds.top;
-            tiltX?.((y / bounds.height - .5) * -9);
-            tiltY?.((x / bounds.width - .5) * 12);
-            cursorX(Math.max(50, Math.min(x, bounds.width - 50)));
-            cursorY(Math.max(50, Math.min(y, bounds.height - 50)));
-            cursorReveal.play();
+            tiltX((event.clientY - bounds.top - bounds.height / 2) / bounds.height * -4);
+            tiltY((event.clientX - bounds.left - bounds.width / 2) / bounds.width * 4);
           };
-          const leave = () => { tiltX?.(0); tiltY?.(0); cursorReveal.reverse(); };
+          const leave = () => { tiltX(0); tiltY(0); };
           stage.addEventListener("pointermove", move, { passive: true });
           stage.addEventListener("pointerleave", leave);
           stage.addEventListener("blur", leave);
+          window.addEventListener("blur", leave);
           cleanups.push(() => {
             stage.removeEventListener("pointermove", move);
             stage.removeEventListener("pointerleave", leave);
             stage.removeEventListener("blur", leave);
+            window.removeEventListener("blur", leave);
           });
-        });
-
-        root.querySelectorAll<HTMLElement>(".text-link, .closing__cta").forEach((link) => {
-          if (cinematic && link.classList.contains("closing__cta")) return;
-          const arrow = link.querySelector<HTMLElement>(".closing__arrow") ?? link.querySelector<HTMLElement>("span");
-          if (!arrow) return;
-          const distance = link.classList.contains("closing__cta") ? 22 : 8;
-          const x = gsap.quickTo(arrow, "x", { duration: .5, ease: "power3.out" });
-          const y = gsap.quickTo(arrow, "y", { duration: .5, ease: "power3.out" });
-          const move = (event: PointerEvent) => {
-            const bounds = link.getBoundingClientRect();
-            x((event.clientX - bounds.left - bounds.width / 2) / bounds.width * distance);
-            y((event.clientY - bounds.top - bounds.height / 2) / bounds.height * distance);
-          };
-          const leave = () => { x(0); y(0); };
-          link.addEventListener("pointermove", move, { passive: true });
-          link.addEventListener("pointerleave", leave);
-          cleanups.push(() => { link.removeEventListener("pointermove", move); link.removeEventListener("pointerleave", leave); });
         });
       }
     }, root);
@@ -388,9 +293,16 @@ export function createChoreography(root: HTMLElement) {
 
   const details = root.querySelectorAll("details");
   const refreshLayout = () => { ScrollTrigger.refresh(); requestProgress(); };
+  const requestLayoutRefresh = () => {
+    if (layoutFrame) return;
+    layoutFrame = requestAnimationFrame(() => {
+      layoutFrame = 0;
+      if (!disposed) refreshLayout();
+    });
+  };
   details.forEach((detail) => detail.addEventListener("toggle", refreshLayout));
   window.addEventListener("scroll", requestProgress, { passive: true });
-  window.addEventListener("resize", requestProgress, { passive: true });
+  window.addEventListener("resize", requestLayoutRefresh, { passive: true });
   window.addEventListener("motionpreferencechange", setup);
   media.addEventListener("change", setup);
   cinematicMedia.addEventListener("change", setup);
@@ -422,12 +334,13 @@ export function createChoreography(root: HTMLElement) {
     disposed = true;
     clearEffects();
     window.removeEventListener("scroll", requestProgress);
-    window.removeEventListener("resize", requestProgress);
+    window.removeEventListener("resize", requestLayoutRefresh);
     window.removeEventListener("motionpreferencechange", setup);
     media.removeEventListener("change", setup);
     cinematicMedia.removeEventListener("change", setup);
     details.forEach((detail) => detail.removeEventListener("toggle", refreshLayout));
     cancelAnimationFrame(frame);
+    cancelAnimationFrame(layoutFrame);
     cancelAnimationFrame(initialAnchorFrame);
     releaseInitialAnchor();
     root.dataset.motion = "static";
