@@ -1,0 +1,115 @@
+.monogram {
+  position: relative;
+  width: min(100%, 440px);
+  aspect-ratio: 1;
+  container-type: inline-size;
+  perspective: 1100px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.monogram__pointer,
+.monogram__float {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+
+.monogram__pointer {
+  transform-origin: 50% 45%;
+}
+
+.monogram__float {
+  animation: monogram-float 6s ease-in-out infinite;
+}
+
+.monogram__solid {
+  --solid-width: 61cqw;
+  --solid-depth: 17cqw;
+  position: absolute;
+  top: 44%;
+  left: 50%;
+  width: var(--solid-width);
+  height: calc(var(--solid-width) * 1.0846153846);
+  transform: translate(-50%, -50%) rotateX(-16deg) rotateY(-27deg) rotateZ(-11deg);
+  transform-style: preserve-3d;
+}
+
+.monogram__face {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.monogram__face--front {
+  transform: translateZ(calc(var(--solid-depth) / 2));
+  backface-visibility: hidden;
+}
+
+.monogram__face--back {
+  fill: #3c3d3c;
+  transform: translateZ(calc(var(--solid-depth) / -2));
+}
+
+.monogram__surface {
+  fill: #161716;
+  stroke: #3d3e3b;
+  stroke-width: 0.8;
+  stroke-linejoin: round;
+}
+
+.monogram__highlight {
+  fill: none;
+  stroke: #7a7c77;
+  stroke-width: 0.65;
+}
+
+.monogram__edge {
+  position: absolute;
+  height: var(--solid-depth);
+  transform-origin: 0 0;
+  box-shadow: inset 0 0 0 0.5px rgb(255 255 255 / 12%);
+}
+
+.monogram__shadow {
+  position: absolute;
+  bottom: 3%;
+  left: 14%;
+  width: 72%;
+  height: 9%;
+  border-radius: 50%;
+  background: #111;
+  filter: blur(18px);
+  opacity: 0.13;
+  animation: monogram-shadow 6s ease-in-out infinite;
+}
+
+@keyframes monogram-float {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotateY(-14deg) rotateZ(-3deg);
+  }
+  50% {
+    transform: translate3d(0, -22px, 0) rotateY(17deg) rotateZ(6deg);
+  }
+}
+
+@keyframes monogram-shadow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.13;
+  }
+  50% {
+    transform: scale(0.9);
+    opacity: 0.09;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-motion-preference="full"]) .monogram__float,
+  html:not([data-motion-preference="full"]) .monogram__shadow {
+    animation: none;
+  }
+}

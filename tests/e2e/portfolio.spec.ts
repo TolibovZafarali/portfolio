@@ -1,17 +1,19 @@
 import { expect, test } from "@playwright/test";
 
-const sceneIds = ["top", "plane", "type", "route", "operations", "close"] as const;
+const sectionIds = ["top", "work", "venfour", "imposter", "about", "contact"] as const;
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/");
 });
 
-test("renders the complete semantic one-page structure", async ({ page }) => {
-  await expect(page).toHaveTitle("Portfolio — Motion Prototype");
-  await expect(page.getByRole("heading", { level: 1, name: "Portfolio" })).toHaveCount(1);
-  await expect(page.getByRole("heading", { level: 2 })).toHaveCount(5);
-  await expect(page.getByRole("navigation", { name: "Scene index" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Return / top" })).toBeAttached();
+test("presents the developer and real projects in the requested order", async ({ page }) => {
+  await expect(page).toHaveTitle("Zafarali Tolibov — Developer & Product Builder");
+  await expect(page.getByRole("heading", { level: 1, name: "Zafarali Tolibov" })).toHaveCount(1);
+  await expect(page.getByRole("navigation", { name: "Main navigation" })).toBeVisible();
+  await expect(page.locator("[data-project]")).toHaveCount(2);
+  expect(await page.locator("[data-project]").evaluateAll((projects) => projects.map((project) => project.id))).toEqual(["venfour", "imposter"]);
+  await expect(page.getByRole("link", { name: "Explore Venfour", exact: true })).toHaveAttribute("href", "https://venfour.com");
+  await expect(page.getByRole("link", { name: "View on the App Store", exact: true })).toHaveAttribute("href", "https://apps.apple.com/us/app/imposter-all-languages/id6771144493");
 
   const anchorsResolve = await page.locator('a[href^="#"]').evaluateAll((anchors) =>
     anchors.every((anchor) => {
@@ -19,83 +21,107 @@ test("renders the complete semantic one-page structure", async ({ page }) => {
       return Boolean(target && document.querySelector(target));
     }),
   );
-
   expect(anchorsResolve).toBe(true);
 });
 
-test("keeps every scene readable without horizontal overflow", async ({ page }) => {
-  for (const sceneId of sceneIds) {
-    await page.locator(`#${sceneId}`).scrollIntoViewIfNeeded();
-    await page.waitForTimeout(80);
-
+test("keeps all sections and project artwork within the viewport", async ({ page }) => {
+  for (const sectionId of sectionIds) {
+    await page.locator(`#${sectionId}`).scrollIntoViewIfNeeded();
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     );
-
     expect(overflow).toBeLessThanOrEqual(1);
+  }
+
+  for (const image of await page.locator("[data-project] img:not([aria-hidden])").all()) {
+    await image.scrollIntoViewIfNeeded();
+    await expect.poll(() => image.evaluate((element) => (element as HTMLImageElement).complete && (element as HTMLImageElement).naturalWidth > 0)).toBe(true);
   }
 });
 
-test("transforms the opening through native scrolling", async ({ page }) => {
-  const site = page.locator(".site");
-  const leadPanel = page.locator('[data-hero-panel="lead"]');
-  const initialTransform = await leadPanel.evaluate((element) => getComputedStyle(element).transform);
-
-  await expect(site).toHaveAttribute("data-motion", "ready");
+test("animates the opening through native scrolling", async ({ page }) => {
+  await expect(page.locator(".site")).toHaveAttribute("data-motion", "ready");
+  const firstLine = page.locator('[data-hero-line="first"]');
+  await page.waitForTimeout(1700);
+  const initialTransform = await firstLine.evaluate((element) => getComputedStyle(element).transform);
   await page.evaluate(() => window.scrollTo({ top: window.innerHeight * 0.42, behavior: "instant" }));
-  await page.waitForTimeout(750);
+  await page.waitForTimeout(900);
 
-  const transformed = await leadPanel.evaluate((element) => getComputedStyle(element).transform);
-  expect(transformed).not.toBe(initialTransform);
-
-  const progressScale = await page
-    .locator("[data-page-progress]")
-    .evaluate((element) => getComputedStyle(element).transform);
-  expect(progressScale).not.toBe("none");
+  expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  expect(await firstLine.evaluate((element) => getComputedStyle(element).transform)).not.toBe(initialTransform);
+  const progressScale = await page.locator("[data-page-progress]").evaluate((element) => new DOMMatrixReadOnly(getComputedStyle(element).transform).a);
+  expect(progressScale).toBeGreaterThan(0);
+  expect(progressScale).toBeLessThan(1);
 });
 
-test("provides a deliberate reduced-motion presentation", async ({ page }) => {
+test("keeps content readable and artwork still with reduced motion", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.reload();
-
   await expect(page.locator(".site")).toHaveAttribute("data-motion", "reduced");
-  await page.locator("#type").scrollIntoViewIfNeeded();
+  await expect(page.getByRole("button", { name: "Enable animations" })).toHaveAttribute("aria-pressed", "true");
 
+  for (const sectionId of sectionIds) await page.locator(`#${sectionId}`).scrollIntoViewIfNeeded();
   const state = await page.evaluate(() => ({
-    pinPosition: getComputedStyle(document.querySelector<HTMLElement>(".scene__pin")!).position,
-    routeClip: getComputedStyle(
-      document.querySelector<HTMLElement>("[data-route-aperture]")!,
-    ).clipPath,
-    progressVisible: getComputedStyle(
-      document.querySelector<HTMLElement>(".page-progress")!,
-    ).display,
-    typeLabelColor: getComputedStyle(
-      document.querySelector<HTMLElement>("#type .scene-label")!,
-    ).color,
-    typeLabelBackground: getComputedStyle(
-      document.elementFromPoint(
-        document.querySelector<HTMLElement>("#type .scene-label")!.getBoundingClientRect().left,
-        document.querySelector<HTMLElement>("#type .scene-label")!.getBoundingClientRect().top,
-      )!,
-    ).backgroundColor,
+    scrollBehavior: getComputedStyle(document.documentElement).scrollBehavior,
+    contentReadable: [...document.querySelectorAll<HTMLElement>("[data-reveal]")].every((element) => getComputedStyle(element).opacity === "1"),
+    titleTransform: getComputedStyle(document.querySelector<HTMLElement>('[data-hero-line="first"]')!).transform,
+    sculptureAnimation: getComputedStyle(document.querySelector<HTMLElement>(".monogram__float")!).animationName,
   }));
-
-  expect(state.pinPosition).toBe("relative");
-  expect(state.routeClip).toBe("none");
-  expect(state.progressVisible).toBe("none");
-  expect(state.typeLabelColor).not.toBe(state.typeLabelBackground);
+  expect(state.scrollBehavior).toBe("auto");
+  expect(state.contentReadable).toBe(true);
+  expect(state.titleTransform).toBe("none");
+  expect(state.sculptureAnimation).toBe("none");
 });
 
-test("supports keyboard entry and a functional closing return", async ({ page }) => {
-  await page.keyboard.press("Tab");
-  await expect(page.getByRole("link", { name: "Skip to selected structures" })).toBeFocused();
-  await page.keyboard.press("Enter");
-  await expect(page).toHaveURL(/#project-index$/);
+test("lets visitors pause and re-enable motion", async ({ page }) => {
+  const firstLine = page.locator('[data-hero-line="first"]');
+  for (let cycle = 0; cycle < 3; cycle += 1) {
+    await page.getByRole("button", { name: "Pause animations" }).click();
+    await expect(page.locator(".site")).toHaveAttribute("data-motion", "reduced");
+    await expect(page.getByRole("button", { name: "Enable animations" })).toHaveAttribute("aria-pressed", "true");
+    expect(await page.locator("[data-reveal]").evaluateAll((elements) => elements.every((element) => getComputedStyle(element).opacity === "1"))).toBe(true);
+    const initialTransform = await firstLine.evaluate((element) => getComputedStyle(element).transform);
+    await page.evaluate(() => window.scrollTo({ top: window.innerHeight * 0.42, behavior: "instant" }));
+    await page.waitForTimeout(150);
+    expect(await firstLine.evaluate((element) => getComputedStyle(element).transform)).toBe(initialTransform);
 
-  await page.getByRole("link", { name: "05 — Closure" }).click();
-  await expect(page).toHaveURL(/#close$/);
-  await page.getByRole("link", { name: "Return / top" }).click();
+    await page.getByRole("button", { name: "Enable animations" }).click();
+    await expect(page.locator(".site")).toHaveAttribute("data-motion", "ready");
+    await expect(page.getByRole("button", { name: "Pause animations" })).toHaveAttribute("aria-pressed", "false");
+  }
+  for (const projectId of ["venfour", "imposter"]) {
+    const projectHeading = page.locator(`#${projectId} .project__heading`);
+    await projectHeading.scrollIntoViewIfNeeded();
+    await expect(projectHeading).toHaveCSS("opacity", "1");
+  }
+});
+
+test("supports keyboard entry, navigation, and the closing return", async ({ page }) => {
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("link", { name: "Skip to selected work" })).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/#work$/);
+  await expect(page.locator("#work")).toBeFocused();
+  await page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Connect" }).click();
+  await expect(page).toHaveURL(/#contact$/);
+  await page.getByRole("link", { name: "BACK TO TOP", exact: true }).click();
   await expect(page).toHaveURL(/#top$/);
+});
+
+test("expands and closes project details with the keyboard", async ({ page }) => {
+  for (const projectId of ["venfour", "imposter"]) {
+    const details = page.locator(`#${projectId} details`);
+    const summary = details.locator("summary");
+    await summary.scrollIntoViewIfNeeded();
+    await summary.focus();
+    await page.keyboard.press("Enter");
+    await expect(details).toHaveAttribute("open", "");
+    await expect(details.getByRole("heading").first()).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+    await summary.focus();
+    await page.keyboard.press("Enter");
+    await expect(details).not.toHaveAttribute("open");
+  }
 });
 
 test("runs without runtime exceptions or console errors", async ({ page }) => {
@@ -104,10 +130,74 @@ test("runs without runtime exceptions or console errors", async ({ page }) => {
   page.on("console", (message) => {
     if (message.type() === "error") failures.push(message.text());
   });
-
   await page.reload();
-  await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "instant" }));
-  await page.waitForTimeout(750);
-
+  for (const sectionId of sectionIds) await page.locator(`#${sectionId}`).scrollIntoViewIfNeeded();
+  await page.waitForTimeout(900);
   expect(failures).toEqual([]);
+});
+
+test("restores split lettering and unclipped projects when motion is paused", async ({ page }) => {
+  await page.getByRole("button", { name: "Pause animations" }).click();
+  await expect(page.locator(".site")).toHaveAttribute("data-motion", "reduced");
+
+  const letters = page.locator(".motion-letter");
+  const projects = page.locator("[data-stage]");
+  expect(await letters.evaluateAll((elements) => elements.every((element) => {
+    const style = getComputedStyle(element);
+    return style.opacity === "1" && style.transform === "none";
+  }))).toBe(true);
+  expect(await projects.evaluateAll((elements) => elements.every((element) => getComputedStyle(element).clipPath === "none"))).toBe(true);
+  expect(await page.locator(".ink-reveal").evaluateAll((elements) => elements.every((element) => getComputedStyle(element).color !== "rgba(0, 0, 0, 0)"))).toBe(true);
+
+  await page.goto("/#contact");
+  await page.reload();
+  await expect(page.locator(".site")).toHaveAttribute("data-motion", "ready");
+  await expect(page.locator(".closing__words")).toBeInViewport();
+  await expect.poll(() => page.locator(".closing .motion-letter").evaluateAll((elements) => elements.every((element) => getComputedStyle(element).opacity === "1"))).toBe(true);
+  await expect(page.getByRole("link", { name: "Email Zafarali Tolibov", exact: true })).toBeVisible();
+});
+
+test("runs ribbon and pointer effects only while motion is enabled", async ({ page }) => {
+  const ribbon = page.locator(".motion-ribbon");
+  const track = page.locator(".motion-ribbon__track");
+  await ribbon.scrollIntoViewIfNeeded();
+  await expect(ribbon).toHaveAttribute("data-running", "true");
+  const movingStart = await track.evaluate((element) => getComputedStyle(element).transform);
+  await page.waitForTimeout(180);
+  expect(await track.evaluate((element) => getComputedStyle(element).transform)).not.toBe(movingStart);
+
+  await page.locator("#contact").scrollIntoViewIfNeeded();
+  await expect(ribbon).toHaveAttribute("data-running", "false");
+  const stoppedStart = await track.evaluate((element) => getComputedStyle(element).transform);
+  await page.waitForTimeout(180);
+  expect(await track.evaluate((element) => getComputedStyle(element).transform)).toBe(stoppedStart);
+
+  const pointerAvailable = await page.evaluate(() => matchMedia("(hover: hover) and (pointer: fine)").matches);
+  const stage = page.locator(".venfour-stage");
+  if (pointerAvailable) {
+    await stage.scrollIntoViewIfNeeded();
+    const bounds = await stage.boundingBox();
+    expect(bounds).not.toBeNull();
+    await page.mouse.move(bounds!.x + bounds!.width * .75, bounds!.y + bounds!.height * .35);
+    await expect(stage.locator(".project-cursor")).toHaveCSS("opacity", "1");
+    await expect.poll(() => stage.locator(".project-depth").evaluate((element) => {
+      const matrix = new DOMMatrixReadOnly(getComputedStyle(element).transform);
+      return Math.abs(matrix.m13) + Math.abs(matrix.m23);
+    })).toBeGreaterThan(.01);
+  }
+
+  await page.getByRole("button", { name: "Pause animations" }).click();
+  if (pointerAvailable) {
+    await stage.scrollIntoViewIfNeeded();
+    const bounds = await stage.boundingBox();
+    await page.mouse.move(bounds!.x + bounds!.width * .25, bounds!.y + bounds!.height * .65);
+    await expect(stage.locator(".project-depth")).toHaveCSS("transform", "none");
+    await expect(stage.locator(".project-cursor")).toHaveCSS("opacity", "0");
+  }
+  await ribbon.scrollIntoViewIfNeeded();
+  await expect(page.locator(".site")).toHaveAttribute("data-motion", "reduced");
+  const pausedStart = await track.evaluate((element) => getComputedStyle(element).transform);
+  await page.waitForTimeout(180);
+  expect(await track.evaluate((element) => getComputedStyle(element).transform)).toBe(pausedStart);
+  expect(pausedStart).toBe("none");
 });

@@ -4,55 +4,16 @@
   font-display: swap;
   font-weight: 100 900;
   font-stretch: 62% 125%;
-  src: url("@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2")
-    format("woff2-variations");
-}
-
-@property --row-weight {
-  syntax: "<number>";
-  inherits: true;
-  initial-value: 430;
-}
-
-@property --row-shift {
-  syntax: "<length>";
-  inherits: true;
-  initial-value: 0rem;
-}
-
-@property --route-inset {
-  syntax: "<percentage>";
-  inherits: false;
-  initial-value: 18%;
-}
-
-@property --type-clip {
-  syntax: "<percentage>";
-  inherits: false;
-  initial-value: 32%;
-}
-
-@property --row-reveal {
-  syntax: "<percentage>";
-  inherits: true;
-  initial-value: 0%;
+  src: url("@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2") format("woff2-variations");
 }
 
 :root {
-  --color-paper: #e8e2d7;
-  --color-carbon: #11120f;
-  --color-oxide: #c63f28;
-  --color-oxide-on-paper: #9f2f1d;
-  --color-oxide-on-carbon: #e16047;
-  --color-quiet: #66635c;
-  --color-paper-muted: #c8c1b5;
-  --font-primary: "Archivo Variable", "Arial Narrow", Arial, sans-serif;
-  --edge: clamp(1rem, 2.2vw, 2.5rem);
-  --chrome-top: clamp(1rem, 2vw, 1.8rem);
-  --display-size: clamp(5rem, 14vw, 15rem);
-  --scene-size: clamp(2.8rem, 7vw, 8rem);
-  --label-size: clamp(0.75rem, 0.72vw, 0.82rem);
-  --rule: 1px;
-  --incision-position: 58%;
-  --ease-interface: cubic-bezier(0.22, 1, 0.36, 1);
+  --paper: #f7f7f2;
+  --ink: #1c1c1a;
+  --quiet: #686862;
+  --line: #d9d9d2;
+  --accent: #ceff63;
+  --edge: clamp(22px, 4.45vw, 88px);
+  --font-primary: "Archivo Variable", Arial, sans-serif;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }

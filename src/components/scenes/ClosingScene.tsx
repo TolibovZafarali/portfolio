@@ -1,47 +1,13 @@
 import { portfolioContent } from "../../content/portfolio";
+import { MotionLetters } from "../artwork/MotionLetters";
 
 export function ClosingScene() {
   return (
-    <section
-      className="closing scene"
-      id="close"
-      data-scene="close"
-      aria-labelledby="closing-title"
-    >
-      <div className="scene__pin closing__pin">
-        <h2 id="closing-title" className="visually-hidden">
-          {portfolioContent.completionLabel}
-        </h2>
-
-        <div className="closing__field" aria-hidden="true">
-          <span>05</span>
-          <i />
-        </div>
-
-        <div className="closing__panel closing__panel--lead" data-closing-panel="lead">
-          <span className="closing__word closing__word--lead" aria-hidden="true">
-            PORT
-          </span>
-          <span className="closing__meta">INDEX / 05—05</span>
-          <span className="closing__meta closing__meta--complete">
-            {portfolioContent.completionLabel}
-          </span>
-        </div>
-
-        <div className="closing__panel closing__panel--trail" data-closing-panel="trail">
-          <span className="closing__word closing__word--trail" aria-hidden="true">
-            FOLIO
-          </span>
-          <a className="closing__return" href="#top">
-            Return / top <span aria-hidden="true">↑</span>
-          </a>
-          <span className="closing__meta closing__meta--end">END / REST</span>
-        </div>
-
-        <span className="closing__incision" data-closing-incision aria-hidden="true">
-          <i />
-        </span>
-      </div>
-    </section>
+    <footer className="closing" id="contact" data-scene="contact">
+      <div className="section-kicker"><span>HAVE SOMETHING IN MIND?</span><span>LET’S MAKE IT REAL.</span></div>
+      <a className="closing__cta" href={`mailto:${portfolioContent.email}`} aria-label="Email Zafarali Tolibov"><span className="closing__words"><MotionLetters text="Let’s build" /><span className="serif closing__period">.</span></span><span className="closing__arrow-wrap" aria-hidden="true"><span className="closing__arrow">↗</span></span></a>
+      <div className="closing__links"><div><p>Good things start with a conversation.</p><a className="closing__email" href={`mailto:${portfolioContent.email}`}>{portfolioContent.email}</a></div><div className="closing__socials"><a className="text-link" href={portfolioContent.github} target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a><a className="text-link" href={portfolioContent.linkedin} target="_blank" rel="noreferrer">LinkedIn <span aria-hidden="true">↗</span></a></div></div>
+      <div className="closing__bottom"><span>© {new Date().getFullYear()} ZAFARALI TOLIBOV</span><span>BUILT WITH INTENTION.</span><a href="#top">BACK TO TOP <span aria-hidden="true">↑</span></a></div>
+    </footer>
   );
 }
