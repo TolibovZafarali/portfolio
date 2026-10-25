@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import gsap from "gsap";
 import "../../styles/atmosphere.css";
 
 const TAU = Math.PI * 2;
@@ -21,6 +22,10 @@ export function HeroAtmosphere() {
     const site = canvas?.closest<HTMLElement>(".site");
     if (!canvas || !context || !hero || !site) return;
 
+    const palette = getComputedStyle(site);
+    const accentColor = gsap.utils.splitColor(palette.getPropertyValue("--accent-on-dark").trim()).slice(0, 3).join(", ");
+    const lineStart = gsap.utils.splitColor(palette.getPropertyValue("--ink").trim()).slice(0, 3);
+    const lineEnd = gsap.utils.splitColor(palette.getPropertyValue("--accent-highlight").trim()).slice(0, 3);
     const reducedMedia = window.matchMedia("(prefers-reduced-motion: reduce)");
     const pointerMedia = window.matchMedia("(hover: hover) and (pointer: fine)");
     let width = 0;
@@ -59,10 +64,7 @@ export function HeroAtmosphere() {
       const radius = baseRadius * (1 + expansion * 1.25 + burst);
       const centerX = width * mix(mobile ? .63 : .84, .55, smoothstep(0, .55, progress));
       const centerY = height * mix(mobile ? .58 : .55, .5, smoothstep(0, .55, progress));
-      const shade = Math.round(mix(40, 226, tint));
-      const green = Math.round(mix(44, 239, tint));
-      const blue = Math.round(mix(38, 211, tint));
-      const lineColor = `${shade}, ${green}, ${blue}`;
+      const lineColor = lineStart.map((channel, index) => Math.round(mix(channel, lineEnd[index]!, tint))).join(", ");
       const perspective = Math.max(width, height) * 1.35;
       const arcSegments = mobile ? 56 : 76;
 
@@ -104,7 +106,7 @@ export function HeroAtmosphere() {
         }
         context!.lineWidth = 1.25;
         context!.strokeStyle = tint > .75 && orbit === 1
-          ? `rgba(206, 255, 99, ${.48 * tint})`
+          ? `rgba(${accentColor}, ${.48 * tint})`
           : `rgba(${lineColor}, ${mix(.38, .52, tint)})`;
         context!.stroke();
       }
@@ -123,7 +125,7 @@ export function HeroAtmosphere() {
         const y = point.y + (distance > 0 ? dy / distance * force : 0);
         const accent = index % 17 === 0 && tint > .5;
         const alpha = clamp(.48 + (point.depth - .8) * .8, .32, .9);
-        context!.fillStyle = accent ? `rgba(206, 255, 99, ${alpha})` : `rgba(${lineColor}, ${alpha})`;
+        context!.fillStyle = accent ? `rgba(${accentColor}, ${alpha})` : `rgba(${lineColor}, ${alpha})`;
         const size = (index % 13 === 0 ? 2.4 : 1.1) * point.depth;
         context!.beginPath();
         context!.arc(x, y, size, 0, TAU);

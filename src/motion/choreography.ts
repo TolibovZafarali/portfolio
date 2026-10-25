@@ -144,6 +144,11 @@ export function createChoreography(root: HTMLElement) {
       }
 
       if (cinematic) {
+        const palette = getComputedStyle(root);
+        const accentFront = palette.getPropertyValue("--accent-on-dark").trim();
+        const accentDepth = palette.getPropertyValue("--accent-depth").trim();
+        const accentHighlight = palette.getPropertyValue("--accent-highlight").trim();
+        const edgeShades = Array.from({ length: 3 }, (_, index) => gsap.utils.interpolate(accentDepth, accentFront, index / 3));
         const sculpture = root.querySelector<HTMLElement>(".hero__sculpture")!;
         const composition = root.querySelector<HTMLElement>(".hero__composition")!;
         const centerX = (fraction: number) => hero.clientWidth * fraction - composition.offsetLeft - sculpture.offsetLeft - sculpture.offsetWidth / 2;
@@ -169,10 +174,10 @@ export function createChoreography(root: HTMLElement) {
           .to(sculpture, { x: () => centerX(window.innerWidth > 768 ? .77 : .63), y: () => centerY(window.innerWidth > 768 ? .52 : .69), scale: responsive(1.65, 1.05), duration: .45 }, .5)
           .to(`${monogram} .monogram__orbit`, { rotationY: 360, rotationX: 14, rotationZ: -10, duration: .88 }, .05)
           .to(`${monogram} .monogram__shadow`, { opacity: 0, duration: .2 }, .05)
-          .to(`${monogram} .monogram__surface`, { fill: "#d8efac", stroke: "#edf4d9", duration: .28 }, .24)
-          .to(`${monogram} .monogram__face--back`, { fill: "#a8b69b", duration: .28 }, .24)
-          .to(`${monogram} .monogram__highlight`, { stroke: "#f0f8dd", duration: .28 }, .24)
-          .to(`${monogram} .monogram__edge`, { backgroundColor: (i) => `hsl(80, 12%, ${53 + (i % 3) * 9}%)`, duration: .28 }, .24)
+          .to(`${monogram} .monogram__surface`, { fill: accentFront, stroke: accentHighlight, duration: .28 }, .24)
+          .to(`${monogram} .monogram__face--back`, { fill: accentDepth, duration: .28 }, .24)
+          .to(`${monogram} .monogram__highlight`, { stroke: accentHighlight, duration: .28 }, .24)
+          .to(`${monogram} .monogram__edge`, { backgroundColor: (i) => edgeShades[i % edgeShades.length]!, duration: .28 }, .24)
           .fromTo(chapter, { autoAlpha: 0, y: 45 }, { autoAlpha: 1, y: 0, duration: .28 }, .54)
           .fromTo(chapter.querySelectorAll("p > span"), { yPercent: 30, opacity: 0 }, { yPercent: 0, opacity: 1, duration: .22, stagger: .055 }, .56)
           .to(".hero__sequence", { opacity: 1, duration: .25 }, .54)

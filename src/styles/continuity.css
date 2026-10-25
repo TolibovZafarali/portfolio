@@ -54,4 +54,5 @@
     border-block: 1px solid var(--journey-line, var(--line));
   }
   .site[data-motion="ready"] .motion-ribbon__outline { -webkit-text-stroke-color: var(--journey-ink, var(--ink)); }
+  .site[data-motion="ready"] .motion-ribbon__phrase i { color: var(--accent); }
 }

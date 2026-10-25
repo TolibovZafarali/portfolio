@@ -29,7 +29,7 @@
 .hero__chapter-kicker { display: block; font-size: 9px; letter-spacing: .1em; margin-bottom: 28px; color: #c1c3b9; }
 .hero__chapter p { font-size: clamp(60px, 8.3vw, 160px); font-weight: 550; letter-spacing: -.065em; line-height: .98; margin: 0; }
 .hero__chapter p > span { display: block; }
-.hero__chapter i { font-family: Georgia,serif; font-weight: 400; color: var(--accent); }
+.hero__chapter i { font-family: Georgia,serif; font-weight: 400; color: var(--accent-on-dark); }
 .hero__chapter-note { display: block; margin-top: 32px; font-size: 12px; color: #c1c3b9; line-height: 1.65; }
 .hero__sequence {
   position: absolute;
@@ -46,7 +46,7 @@
   pointer-events: none;
 }
 .hero__sequence-line { flex: 1; height: 1px; background: #ffffff25; }
-.hero__sequence-line i { display: block; width: 100%; height: 100%; background: var(--accent); transform: scaleX(0); transform-origin: left; }
+.hero__sequence-line i { display: block; width: 100%; height: 100%; background: var(--accent-on-dark); transform: scaleX(0); transform-origin: left; }
 .hero__sequence > span:last-child { font-size: 20px; }
 .site[data-journey-active="true"] .monogram__float,
 .site[data-journey-active="true"] .monogram__shadow { animation-play-state: paused; }

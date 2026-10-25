@@ -44,6 +44,11 @@
   transition: transform 550ms var(--ease);
 }
 
+.site[data-motion="ready"] .hero__scroll:is(:hover, :focus-visible) .circle-arrow::before,
+.site[data-motion="ready"] .hero__scroll:is(:hover, :focus-visible) .circle-arrow::after { color: var(--on-accent); }
+
+:is(.source-link, .closing__email, .closing__bottom a):is(:hover, :focus-visible) { color: var(--interactive-accent, var(--accent)); }
+
 .site[data-motion="ready"] .circle-arrow::before { transform: translateY(-110%); }
 .site[data-motion="ready"] .circle-arrow::after { transform: translateY(0); }
 .site[data-motion="ready"] .hero__scroll:focus-visible .circle-arrow::before { transform: translateY(0); }
@@ -79,9 +84,9 @@
 
   .site[data-motion="ready"] .tech-list li:hover {
     transform: translateY(-3px);
-    border-color: var(--ink);
-    background-color: var(--ink);
-    color: var(--paper);
+    border-color: var(--accent);
+    background-color: var(--accent-soft);
+    color: var(--ink);
   }
 
   .site[data-motion="ready"] .principle:hover .principle__graphic i { border-color: #181915; }
