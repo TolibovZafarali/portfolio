@@ -1,55 +1,58 @@
 # Zafarali Tolibov — Portfolio
 
-A personal portfolio featuring Venfour first, followed by Imposter: All Languages.
-Built with React, TypeScript, Vite, and GSAP, with self-hosted typography.
+A personal portfolio built with React, TypeScript, Vite, and GSAP.
 
-## Development
+## Featured projects
+
+| Project | Visit | Source |
+| --- | --- | --- |
+| Venfour — vehicle valuation | [Website](https://venfour.com) | [Repository](https://github.com/TolibovZafarali/venfour) |
+| Imposter: All Languages — party game | [App Store](https://apps.apple.com/us/app/imposter-all-languages/id6771144493) | [Repository](https://github.com/TolibovZafarali/imposter) |
+
+## Run locally
+
+Requires Node.js **22.13 or newer** and npm.
 
 ```bash
-npm install
+git clone https://github.com/TolibovZafarali/portfolio.git
+cd portfolio
+npm ci
 npm run dev
 ```
 
-Local preview: http://localhost:3000.
+Open [localhost:3000](http://localhost:3000).
 
-## Validation
+## Find your way around
+
+| To change or inspect | Start here |
+| --- | --- |
+| Project descriptions, links, and contact information | [src/content/portfolio.ts](src/content/portfolio.ts) |
+| Page structure and section order | [src/App.tsx](src/App.tsx) |
+| Navigation, sections, and artwork | [src/components/](src/components/) |
+| Colors, typography, and layout | [src/styles/](src/styles/) |
+| Scroll animation and motion controls | [src/motion/](src/motion/) |
+| Project images and logos | [public/projects/](public/projects/) |
+| Unit and browser tests | [tests/](tests/) |
+
+The [original design plan](docs/PORTFOLIO_DESIGN_PLAN.md) is retained for historical reference.
+
+## Check and build
 
 ```bash
-npm run build
+npm run lint
 npm test
+npm run build
+```
+
+The build checks TypeScript and writes the static site to `dist/`. Run
+`npm run preview` to view it at [localhost:4173](http://localhost:4173).
+
+For browser checks, install Chromium once, then run the suite:
+
+```bash
+npx playwright install chromium
 npm run test:e2e
 ```
 
-Browser checks cover phone, tablet, and desktop layouts, keyboard navigation,
-project details, native scrolling, motion controls, and reduced-motion preferences.
-
-## Content and visuals
-
-Project descriptions, technology lists, destinations, and public contact links are
-in `src/content/portfolio.ts`. Both project repositories are public. The Venfour
-showcase uses a capture of its public homepage; Imposter uses the project's App
-Store artwork. Public links and source material were checked on October 24, 2026.
-
-The opening uses GSAP ScrollTrigger: a sticky hero carries the 3D monogram
-through an orbital particle field into a second, dark composition. The monogram
-then fades out as the page returns to the project showcases. The hero sequence
-uses 270svh on desktop and 240svh on smaller screens.
-
-The rest of the portfolio scrolls naturally. Each project pairs its artwork and
-explanation on desktop and stacks them on phones, with a brief entrance and a
-subtle pointer tilt. About presents the introduction and all three principles
-together, followed directly by the contact section. There are no pinned project
-stages or additional transformation interludes.
-
-The monogram uses CSS 3D geometry; the orbital field uses a lightweight,
-resolution-capped canvas. Decorative motion pauses outside the viewport and while
-the page is hidden. The fixed motion control preserves the current reading
-position when animation is disabled, and the initial presentation respects the
-system's reduced-motion preference. Geometry refreshes on resize and when project
-details expand.
-
-Browser tests cover opening continuity, native scrolling, compact project flow,
-local artwork, readable About and contact content, keyboard navigation, project
-details, and motion controls across phone, tablet, and desktop layouts.
-
-`npm run build` generates the static site in `dist/` for hosting.
+Browser tests build and serve the site automatically, covering responsive layouts,
+keyboard navigation, project details, and reduced motion.

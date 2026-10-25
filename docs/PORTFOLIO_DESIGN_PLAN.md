@@ -1,8 +1,10 @@
-# Portfolio Design Plan
+# Original Portfolio Design Plan
 
-Status: active living plan
-Direction: locked
-Content phase: neutral structural prototype
+Status: historical reference — original neutral prototype.
+
+This plan describes an earlier design and its original validation results. It does
+not describe the current portfolio. See the [README](../README.md) for setup and
+links to the current source. The original notes are preserved below.
 
 ## Creative concept
 
