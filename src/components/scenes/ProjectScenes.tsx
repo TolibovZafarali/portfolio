@@ -1,4 +1,5 @@
 import type { Project } from "../../content/portfolio";
+import { ProjectHandoff } from "./ProjectHandoff";
 
 function ProjectDetails({ project }: { readonly project: Project }) {
   return (
@@ -29,8 +30,10 @@ export function VenfourScene({ project }: { readonly project: Project }) {
   return (
     <article className="project project--venfour" id="venfour" aria-labelledby="venfour-title" data-project>
       <div className="project__heading" data-reveal><h2 id="venfour-title"><span className="project__number">{project.index}</span>{project.name}</h2><span className="project__type">A LITTLE MORE CLARITY.</span></div>
+      <div className="project-screen">
       <a className="project-stage venfour-stage" href={project.url} target="_blank" rel="noreferrer" aria-label="Visit Venfour — opens in a new tab" data-stage>
         <div className="stage-grid" aria-hidden="true" />
+        <span className="project-cinematic-title" aria-hidden="true">CLEAR.</span>
         <div className="venfour-stage__top"><img src="/projects/venfour-wordmark.svg" width="160" height="42" alt="Venfour" /><span>CONFIDENCE STARTS WITH CLARITY.</span></div>
         <div className="project-depth">
         <div className="browser-frame" data-project-visual>
@@ -42,7 +45,9 @@ export function VenfourScene({ project }: { readonly project: Project }) {
         <span className="project-cursor" aria-hidden="true">VIEW<br />PROJECT ↗</span>
         <span className="stage-caption">01 / INDEPENDENT VALUATION REVIEW</span>
         <span className="stage-visit" aria-hidden="true">EXPLORE PROJECT <span>↗</span></span>
+        <span className="project-timeline" aria-hidden="true"><i /></span>
       </a>
+      </div>
       <ProjectCopy project={project} />
     </article>
   );
@@ -52,6 +57,8 @@ export function ImposterScene({ project }: { readonly project: Project }) {
   return (
     <article className="project project--imposter" id="imposter" aria-labelledby="imposter-title" data-project>
       <div className="project__heading" data-reveal><h2 id="imposter-title"><span className="project__number">{project.index}</span>Imposter<span className="project__subtitle">All Languages</span></h2><span className="project__type">A LITTLE MORE CHAOS.</span></div>
+      <ProjectHandoff />
+      <div className="project-screen">
       <a className="project-stage imposter-stage" href={project.url} target="_blank" rel="noreferrer" aria-label="View Imposter: All Languages on the App Store — opens in a new tab" data-stage>
         <span className="imposter-stage__ghost" aria-hidden="true">TRUST<br />NO ONE.</span>
         <div className="imposter-stage__top"><span><i className="status-dot" /> ONE PHONE. EVERYONE PLAYS.</span><span>AVAILABLE ON iOS ↗</span></div>
@@ -66,7 +73,9 @@ export function ImposterScene({ project }: { readonly project: Project }) {
         <span className="project-cursor" aria-hidden="true">LET’S<br />PLAY ↗</span>
         <span className="stage-caption">02 / A MULTILINGUAL PARTY GAME</span>
         <span className="stage-visit" aria-hidden="true">MEET THE IMPOSTER <span>↗</span></span>
+        <span className="project-timeline" aria-hidden="true"><i /></span>
       </a>
+      </div>
       <ProjectCopy project={project} />
     </article>
   );

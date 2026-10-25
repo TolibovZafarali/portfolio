@@ -20,6 +20,7 @@ export function Monogram({ className = "" }: { readonly className?: string }) {
   return (
     <div className={`monogram ${className}`} aria-hidden="true">
       <div className="monogram__shadow" />
+      <div className="monogram__orbit">
       <div className="monogram__pointer" data-sculpture>
         <div className="monogram__float">
           <div className="monogram__solid">
@@ -47,6 +48,7 @@ export function Monogram({ className = "" }: { readonly className?: string }) {
             </svg>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

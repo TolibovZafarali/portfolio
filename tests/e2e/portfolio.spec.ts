@@ -65,7 +65,7 @@ test("keeps content readable and artwork still with reduced motion", async ({ pa
     scrollBehavior: getComputedStyle(document.documentElement).scrollBehavior,
     contentReadable: [...document.querySelectorAll<HTMLElement>("[data-reveal]")].every((element) => getComputedStyle(element).opacity === "1"),
     titleTransform: getComputedStyle(document.querySelector<HTMLElement>('[data-hero-line="first"]')!).transform,
-    sculptureAnimation: getComputedStyle(document.querySelector<HTMLElement>(".monogram__float")!).animationName,
+    sculptureAnimation: getComputedStyle(document.querySelector<HTMLElement>(".hero .monogram__float")!).animationName,
   }));
   expect(state.scrollBehavior).toBe("auto");
   expect(state.contentReadable).toBe(true);
@@ -180,7 +180,10 @@ test("runs ribbon and pointer effects only while motion is enabled", async ({ pa
     expect(bounds).not.toBeNull();
     await page.mouse.move(bounds!.x + bounds!.width * .75, bounds!.y + bounds!.height * .35);
     await expect(stage.locator(".project-cursor")).toHaveCSS("opacity", "1");
-    await expect.poll(() => stage.locator(".project-depth").evaluate((element) => {
+    const cinematic = await page.evaluate(() => matchMedia("(min-height: 601px)").matches);
+    const visibleArtwork = cinematic ? page.locator(".continuity-frame") : stage.locator(".project-depth");
+    if (cinematic) await expect(visibleArtwork).toBeVisible();
+    await expect.poll(() => visibleArtwork.evaluate((element) => {
       const matrix = new DOMMatrixReadOnly(getComputedStyle(element).transform);
       return Math.abs(matrix.m13) + Math.abs(matrix.m23);
     })).toBeGreaterThan(.01);
@@ -200,4 +203,88 @@ test("runs ribbon and pointer effects only while motion is enabled", async ({ pa
   await page.waitForTimeout(180);
   expect(await track.evaluate((element) => getComputedStyle(element).transform)).toBe(pausedStart);
   expect(pausedStart).toBe("none");
+});
+
+test("plays and rewinds the cinematic opening and preserves context when paused", async ({ page }) => {
+  const hero = page.locator(".hero");
+  const chapter = page.locator(".hero__chapter");
+  const firstLine = page.locator('[data-hero-line="first"]');
+  const scrollJourney = async (progress: number) => {
+    await page.evaluate((fraction) => {
+      const journey = document.querySelector<HTMLElement>(".hero-journey")!;
+      const heroElement = document.querySelector<HTMLElement>(".hero")!;
+      const top = journey.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({ top: top + (journey.offsetHeight - heroElement.offsetHeight) * fraction, behavior: "instant" });
+    }, progress);
+    await expect.poll(async () => Number(await hero.getAttribute("data-journey-progress"))).toBeCloseTo(progress, 2);
+  };
+
+  await expect(page.locator(".site")).toHaveAttribute("data-motion", "ready");
+  await page.waitForTimeout(2100);
+  await expect(page.locator(".hero .motion-letter").last()).toHaveCSS("opacity", "1");
+  await scrollJourney(.65);
+  expect(await hero.evaluate((element) => Math.abs(element.getBoundingClientRect().top))).toBeLessThan(1);
+  await expect(firstLine).toHaveCSS("opacity", "0");
+  expect(await page.locator(".hero__iris").evaluate((element) => new DOMMatrixReadOnly(getComputedStyle(element).transform).a)).toBeGreaterThan(.95);
+  expect(await chapter.evaluate((element) => Number(getComputedStyle(element).opacity))).toBeGreaterThan(.2);
+  await expect(page.locator(".hero-atmosphere")).toBeVisible();
+
+  await scrollJourney(.99);
+  await expect(chapter).toHaveCSS("opacity", "1");
+  await expect(page.locator(".continuous-artwork .monogram__orbit")).not.toHaveCSS("transform", "none");
+  await scrollJourney(0);
+  await expect(firstLine).toHaveCSS("opacity", "1");
+  await expect(page.locator(".hero__eyebrow")).toHaveCSS("opacity", "1");
+  await expect(page.locator("[data-hero-intro]")).toHaveCSS("opacity", "1");
+  expect(await page.locator("[data-hero-intro] > *, .hero__eyebrow > span").evaluateAll((elements) => elements.every((element) => getComputedStyle(element).opacity === "1"))).toBe(true);
+  await expect(chapter).toHaveCSS("visibility", "hidden");
+  expect(await page.locator(".hero__iris").evaluate((element) => new DOMMatrixReadOnly(getComputedStyle(element).transform).a)).toBeLessThan(.01);
+
+  await scrollJourney(.65);
+  await page.getByRole("button", { name: "Pause animations" }).click();
+  await expect(page.locator(".site")).toHaveAttribute("data-motion", "reduced");
+  await expect(page.getByRole("heading", { level: 1, name: "Zafarali Tolibov" })).toBeInViewport();
+  await expect(firstLine).toHaveCSS("opacity", "1");
+  await expect(page.locator(".hero__iris")).toHaveCSS("display", "none");
+  await expect(page.locator(".hero-atmosphere")).toHaveCSS("visibility", "hidden");
+  expect(await page.evaluate(() => Math.abs(document.querySelector<HTMLElement>(".hero-journey")!.offsetHeight - document.querySelector<HTMLElement>(".hero")!.offsetHeight))).toBeLessThan(1);
+
+  await page.getByRole("button", { name: "Enable animations" }).click();
+  await page.evaluate(() => {
+    const screen = document.querySelector<HTMLElement>(".project--venfour .project-screen")!;
+    const stage = screen.querySelector<HTMLElement>(".project-stage")!;
+    window.scrollTo({ top: screen.getBoundingClientRect().top + window.scrollY + (screen.offsetHeight - stage.offsetHeight) * .5, behavior: "instant" });
+  });
+  await expect(page.locator(".venfour-stage")).toBeInViewport();
+  await page.getByRole("button", { name: "Pause animations" }).click();
+  await expect(page.locator(".venfour-stage")).toBeInViewport();
+  expect(await page.locator(".venfour-stage").evaluate((element) => Math.abs(element.getBoundingClientRect().top))).toBeLessThan(3);
+});
+
+test("keeps narrow headers and short landscape screens navigable", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 700 });
+  const navigation = await page.getByRole("navigation", { name: "Main navigation" }).boundingBox();
+  const toggle = await page.getByRole("button", { name: "Pause animations" }).boundingBox();
+  expect(navigation).not.toBeNull();
+  expect(toggle).not.toBeNull();
+  expect(navigation!.x + navigation!.width).toBeLessThanOrEqual(toggle!.x);
+  expect(toggle!.x + toggle!.width).toBeLessThanOrEqual(320);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+
+  await page.setViewportSize({ width: 844, height: 390 });
+  await expect(page.locator(".hero")).toHaveCSS("position", "relative");
+  await expect(page.locator(".hero__iris")).toHaveCSS("display", "none");
+  expect(await page.evaluate(() => Math.abs(document.querySelector<HTMLElement>(".hero-journey")!.offsetHeight - document.querySelector<HTMLElement>(".hero")!.offsetHeight))).toBeLessThan(1);
+
+  await page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Work", exact: true }).click();
+  await expect(page).toHaveURL(/#work$/);
+  for (const sectionId of ["venfour", "imposter", "about", "contact"]) {
+    await page.locator(`#${sectionId}`).scrollIntoViewIfNeeded();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+  }
+  await expect(page.locator(".venfour-stage")).toHaveCSS("position", "relative");
+  await expect(page.getByRole("link", { name: "Email Zafarali Tolibov", exact: true })).toBeInViewport();
+  await page.getByRole("button", { name: "Pause animations" }).click();
+  await expect(page.locator(".site")).toHaveAttribute("data-motion", "reduced");
+  await expect(page.getByRole("link", { name: "Email Zafarali Tolibov", exact: true })).toBeInViewport();
 });

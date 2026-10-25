@@ -6,6 +6,9 @@ import "./styles/base.css";
 import "./styles/scenes.css";
 import "./styles/motion.css";
 import "./styles/interactions.css";
+import "./styles/cinematic.css";
+import "./styles/continuity.css";
+import "./styles/handoff.css";
 
 const root = document.getElementById("root");
 

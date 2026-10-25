@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { ContinuousWorld } from "./components/artwork/ContinuousWorld";
 import { SiteChrome } from "./components/chrome/SiteChrome";
 import { ClosingScene } from "./components/scenes/ClosingScene";
 import { HeroScene } from "./components/scenes/HeroScene";
@@ -15,6 +16,7 @@ export default function App() {
 
   return (
     <div className="site" ref={rootRef} data-motion="static">
+      <ContinuousWorld />
       <SiteChrome items={portfolioContent.navigation} />
       <main>
         <HeroScene />
